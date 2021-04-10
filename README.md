@@ -15,7 +15,7 @@ pip3 install math_braid
 ```
 
 ```python3
-from math_braind import Braid
+from math_braid import Braid
 
 # Identity Element
 Braid([], 4)

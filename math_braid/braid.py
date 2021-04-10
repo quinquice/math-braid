@@ -28,25 +28,25 @@ class Braid:
 
     @classmethod
     def random(cls, n=None, p=None):
-        '''
+        """
         >>> N = 5
         >>> b=Braid.random(N, 1)
         >>> b * ~b == B[N]() or [b, ~b]
         True
-        '''
+        """
         if n is None:
             n = random.randint(5, 20)
         if p is None:
             p = random.randint(5, 100)
         a = []
         for i in range(0, p):
-            '''
+            """
             I tried this and found that it didn't work.
             Should be compatible with band presentation.
             x = list(range(0, n))
             random.shuffle(x)
             a.append(x)
-            '''
+            """
             x = random.randint(1, n)
             y = random.randint(1, n)
             a.append([x, y])
@@ -89,6 +89,7 @@ class Braid:
             B[5]([[1, 0, 2, 3, 4]], 0)
 
         """
+        self.clean = False
 
         # Easy: Copy braid properties
         if isinstance(obj, Braid):
@@ -115,9 +116,8 @@ class Braid:
                 self.a = [Braid.CanonicalFactor(x) for x in obj]
             else:
                 self.__createFromArtinOrBand(obj)
-            self.clean = False
 
-        elif obj is 1 or not obj:
+        elif obj == 1 or not obj:
             self.n = n or 0
             self.p = 0
             self.a = []
@@ -155,9 +155,7 @@ class Braid:
         # Don't forget to check the first (leftmost) generator!
         if bandgens[0][0] < bandgens[0][1]:
             self.p -= 1
-        self.a = [
-            Braid.CanonicalFactor.createFromPair(x, self.n)
-            for x in bandgens]
+        self.a = [Braid.CanonicalFactor.createFromPair(x, self.n) for x in bandgens]
 
     def cleanUpFactors(self):
         if self.clean:
@@ -185,7 +183,7 @@ class Braid:
                         rightmost -= 1
                     meets[j + 1] = None
                     meets[j] = None
-                    meets[j-1] = None
+                    meets[j - 1] = None
             leftmost = newleft
 
             # (3, 0),
@@ -228,7 +226,7 @@ class Braid:
                 return Braid(other)
             except NotImplementedError:
                 return NotImplemented
-        if other is 1 or not other:
+        if other == 1 or not other:
             return Braid(self)
         # Ensure compatible braids
         if not isinstance(other, Braid) or self.n != other.n:
@@ -240,10 +238,7 @@ class Braid:
     def __pow__(self, exponent):
         """Compute self^other."""
         if exponent >= 0:
-            return reduce(
-                self.__class__.__mul__,
-                [self] * exponent,
-                self.__class__())
+            return reduce(self.__class__.__mul__, [self] * exponent, self.__class__())
         else:
             return reduce(self.__class__.__mul__, [~self] * -exponent)
 
@@ -262,8 +257,7 @@ class Braid:
         # Transform and reverse the list of canonical factors
         d = Braid.d(self.n)
         k = self.k
-        a = [(~self.a[i] * d).tau(-self.p - i - 1)
-             for i in range(k - 1, -1, -1)]
+        a = [(~self.a[i] * d).tau(-self.p - i - 1) for i in range(k - 1, -1, -1)]
         # Construct the inverse
         return Braid(a, n=self.n, p=-self.p - k)
 
@@ -285,7 +279,7 @@ class Braid:
         False
 
         """
-        if other is 1 or not other:
+        if other == 1 or not other:
             return not self
         if not isinstance(other, Braid):
             return NotImplemented
@@ -299,6 +293,7 @@ class Braid:
         """Override the default boolean casting, since we have a fast way."""
         self.cleanUpFactors()
         return self.p != 0 or self.k != 0
+
     __bool__ = __nonzero__
 
     ###########
@@ -326,7 +321,7 @@ class Braid:
             return
         generator[0] += power
         generator[1] += power
-        positivity = (generator[0] > generator[1])
+        positivity = generator[0] > generator[1]
         generator[0] = (generator[0] - 1) % n + 1
         generator[1] = (generator[1] - 1) % n + 1
         if positivity != (generator[0] > generator[1]):
@@ -363,12 +358,12 @@ class Braid:
             return NotImplemented
         if 0 < i < self.n:
             p = self.p
-            a = self.a + \
-                [Braid.CanonicalFactor.createFromPair([i + 1, i], self.n)]
+            a = self.a + [Braid.CanonicalFactor.createFromPair([i + 1, i], self.n)]
         elif -self.n < i < 0:
             p = self.p - 1
-            a = [x.tau(-1) for x in self.a] + \
-                [Braid.CanonicalFactor.createFromPair([-i, 1 - i], self.n)]
+            a = [x.tau(-1) for x in self.a] + [
+                Braid.CanonicalFactor.createFromPair([-i, 1 - i], self.n)
+            ]
         return Braid(a, self.n, p)
 
     ###########
@@ -391,36 +386,34 @@ class Braid:
         """
         if self.n == 0:
             return Permutation()
-        right = reduce(
-            lambda x, y: x * y,
-            self.a,
-            Permutation(list(range(0, self.n))))
+        right = reduce(lambda x, y: x * y, self.a, Permutation(list(range(0, self.n))))
         d = Braid.d(self.n)
         return (d ** self.p) * right
 
     def numMixedTranspositions(self):
         """ Number of transpositions in mixed canonical form. """
         if self.p >= 0:
-            return (self.n - 1) * self.p + sum(a.numTranspositions()
-                                               for a in self.a)
+            return (self.n - 1) * self.p + sum(a.numTranspositions() for a in self.a)
         elif self.p <= -self.k:
             return (self.n - 1) * (-self.p) + sum(
-                self.n - 1 - a.numTranspositions() for a in self.a)
+                self.n - 1 - a.numTranspositions() for a in self.a
+            )
         else:
-            return sum(self.n - 1 - a.numTranspositions()
-                       for a in self.a[:self.p]) + sum(a.numTranspositions() for a in self.a[self.p:])
+            return sum(
+                self.n - 1 - a.numTranspositions() for a in self.a[: self.p]
+            ) + sum(a.numTranspositions() for a in self.a[self.p :])
 
     def __str__(self):
-        '''
+        """
         >>> str(Braid([-3,2], 5))
         '[5] D^(-1) * [4, 0, 2, 1, 3] * [0, 2, 1, 3, 4]'
-        '''
+        """
         self.cleanUpFactors()
-        return '[%s] D^(%s) * %s' % (self.n, self.p, " * ".join(map(str, self.a)))
+        return "[%s] D^(%s) * %s" % (self.n, self.p, " * ".join(map(str, self.a)))
 
     def __repr__(self):
         self.cleanUpFactors()
-        return 'B[%s]([%s], %i)' % (self.n, ", ".join(map(str, self.a)), self.p)
+        return "B[%s]([%s], %i)" % (self.n, ", ".join(map(str, self.a)), self.p)
 
 
 class _BraidConstructorIndex:
@@ -430,13 +423,15 @@ class _BraidConstructorIndex:
     """
 
     def __getitem__(self, key):
-        return lambda obj=None, p=None, * \
-            args, **kwargs: Braid(obj, *args, n=key, p=p, **kwargs)
+        return lambda obj=None, p=None, *args, **kwargs: Braid(
+            obj, *args, n=key, p=p, **kwargs
+        )
 
 
 B = _BraidConstructorIndex()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
