@@ -44,7 +44,7 @@ class Permutation:
             # Copy another permutation
             self.size = obj.size
             self.array_form = list(obj.array_form)
-        elif obj is 1 or not obj:
+        elif obj == 1 or not obj:
             # Identity element
             self.size = 0
             self.array_form = list()
@@ -69,25 +69,27 @@ class Permutation:
         if self.size == 0:
             return key
         if not (0 <= int(key) < self.size):
-            raise KeyError('Index out of range.')
+            raise KeyError("Index out of range.")
         return self.array_form[key]
 
     def __setitem__(self, key, value):
         """Assign directly to the mapping table."""
         if self.size != 0:
             if not (0 <= int(key) < self.size):
-                raise KeyError('Index out of range.')
+                raise KeyError("Index out of range.")
         self.array_form[key] = value
 
     def __iter__(self):
         """Iterator just loops through the entries of the table."""
         return iter(self.array_form)
+
     iterkeys = __iter__
 
     # For friendly printing
     def __str__(self):
         """Print as a mapping."""
         return str(self.array_form)
+
     __repr__ = __str__
 
     ####################
@@ -143,7 +145,7 @@ class Permutation:
 
         # Check compatibility and then multiply
         if self.size != ans.size:
-            raise TypeError('Incompatible operands')
+            raise TypeError("Incompatible operands")
         # Break the abstraction barrier for a little speed
         ans.array_form = list(map(list(other.array_form).__getitem__, self.array_form))
 
@@ -151,19 +153,18 @@ class Permutation:
 
     def __pow__(self, exponent):
         if exponent >= 0:
-            return reduce(
-                self.__class__.__mul__,
-                [self] * exponent,
-                self.__class__())
+            return reduce(self.__class__.__mul__, [self] * exponent, self.__class__())
         else:
             return reduce(self.__class__.__mul__, [~self] * -exponent)
 
     def __nonzero__(self):
         """Nonzero test. Overridden because we can do it faster."""
         return self.size != 0 and self.array_form != list(range(0, self.size))
+
     __bool__ = __nonzero__
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
